@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: php-sample-web-dev
+    ports:
+      - "8080:80"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=sample
+      - DB_USER=sampleuser
+      - DB_PASSWORD=samplepass
+    volumes:
+      - ./logs:/var/www/html/logs
+    depends_on:
+      - db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    container_name: php-sample-db-dev
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=sample
+      - MYSQL_USER=sampleuser
+      - MYSQL_PASSWORD=samplepass
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "sampleuser", "-psamplepass"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  db_data:

@@ -1,9 +1,10 @@
-# PHP 7.1 sample application
+# PHP 7.1 Sample Application - Containerized
 
-Sample PHP applications that uses:
+This is a containerized version of the PHP sample application with:
 * Dependency Injection
 * Apache routing
 * Composer (aka: Not reinventing the wheel)
+* Docker containers for both web application and database
 
 ## Requirements
 
@@ -13,26 +14,62 @@ Sample PHP applications that uses:
 * PHP >= 7.1
 * Command line tools `make` & `wget`
 
-## Setup
+## Docker Setup (Recommended)
 
-1. Run `make` from project root.
-2. Create a 'sampleuser' MariaDB/MySQL account, by default, application is configured to use password 'samplepass'.
-3. Create the 'sample' database and load [sql/db.sql](/sql/db.sql).
-4. Configure Apache:
-```apache
-<VirtualHost *:80>
-    ServerName %application.host.name%
-    DocumentRoot /%path-to-repository%/web
+### Prerequisites
+* Docker
+* Docker Compose
 
-    <Directory /%path-to-repository%>
-        Require all granted
-        AllowOverride all
-    </Directory>
+### Quick Start (Development)
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/YOUR_GITHUB_USERNAME/php-sample-application.git
+   cd php-sample-application
+   ```
 
-    php_admin_value include_path "/%path-to-repository%/"
+2. Launch the application with Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
 
-    Include /%path-to-repository%/config/vhost.conf
-</VirtualHost>
+3. Access the application at http://localhost:8080/
+
+### Using Pre-built Images (Production)
+Pre-built Docker images are available on Docker Hub:
+* Web Application: [andresdockerdev/php-sample-web](https://hub.docker.com/r/andresdockerdev/php-sample-web)
+* Database: [andresdockerdev/php-sample-db](https://hub.docker.com/r/andresdockerdev/php-sample-db)
+
+To use these images directly:
+```bash
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-You are all set, point your browser to http://%application.host.name%/
+## Environment Variables
+
+### Web Application Container
+| Variable | Description | Default |
+|----------|-------------|---------|
+| DB_HOST | Database hostname | db |
+| DB_NAME | Database name | sample |
+| DB_USER | Database username | sampleuser |
+| DB_PASSWORD | Database password | samplepass |
+
+### Database Container
+| Variable | Description | Default |
+|----------|-------------|---------|
+| MYSQL_ROOT_PASSWORD | Root password | rootpassword |
+| MYSQL_DATABASE | Database name | sample |
+| MYSQL_USER | Username | sampleuser |
+| MYSQL_PASSWORD | Password | samplepass |
+
+## Troubleshooting
+
+### Database Connection Issues
+If you encounter database connection issues:
+- Ensure the database container is running: `docker ps`
+- Check database logs: `docker logs php-sample-db`
+- Verify environment variables match between services
+
+### Web Server Issues
+- Check web server logs: `docker logs php-sample-web`
+- Ensure ports are correctly mapped in docker-compose.yml
